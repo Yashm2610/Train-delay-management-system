@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stations — Train Delay Management System</title>
+  <meta name="description" content="Browse, search and manage station records in the Train Delay Management System."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>🏢 Station Management</h1>
+      <p>View and manage all station records</p>
+    </div>
+    <div class="page-body">
+      <div class="table-wrapper fade-in delay-1">
+        <div class="table-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="form-control" placeholder="Search by code, name, city or state…" oninput="filterTable()"/>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-add" style="display:none" onclick="openAddModal()">＋ Add Station</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadStations()">↻ Refresh</button>
+          <span id="count-label" style="margin-left:auto;font-size:12px;color:var(--text-muted)"></span>
+        </div>
+        <div id="table-area"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Add Station</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form id="station-form" onsubmit="saveForm(event)">
+      <div class="form-group">
+        <label class="form-label">Station Code</label>
+        <input id="f-code" type="text" class="form-control" placeholder="e.g. NDLS" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Station Name</label>
+        <input id="f-name" type="text" class="form-control" placeholder="e.g. New Delhi" required/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input id="f-city" type="text" class="form-control" placeholder="e.g. New Delhi" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          <input id="f-state" type="text" class="form-control" placeholder="e.g. Delhi" required/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Station</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+let allStations = []; let editingCode = null; let isAdmin = false;
+
+(async () => {
+  await renderSidebar();
+  const auth = await getAuthStatus(); isAdmin = auth.isAdmin;
+  if (isAdmin) document.getElementById('btn-add').style.display = 'inline-flex';
+  await loadStations();
+})();
+
+async function loadStations() {
+  document.getElementById('table-area').innerHTML = '<div class="loading-spinner"></div>';
+  try { allStations = await api.get('/stations'); renderTable(allStations); }
+  catch(e) { document.getElementById('table-area').innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+
+function renderTable(data) {
+  document.getElementById('count-label').textContent = `${data.length} station${data.length!==1?'s':''}`;
+  if (!data.length) { document.getElementById('table-area').innerHTML = `<div class="empty-state"><div class="icon">🏢</div><p>No stations found</p></div>`; return; }
+  document.getElementById('table-area').innerHTML = `
+    <table><thead><tr>
+      <th>Code</th><th>Station Name</th><th>City</th><th>State</th>
+      ${isAdmin ? '<th>Actions</th>' : ''}
+    </tr></thead><tbody>${data.map(s => `
+      <tr>
+        <td><span class="station-badge">${s.station_code}</span></td>
+        <td><strong>${s.station_name}</strong></td>
+        <td>${s.city}</td>
+        <td>${s.state}</td>
+        ${isAdmin ? `<td>
+          <button class="btn btn-secondary btn-sm" onclick="openEditModal('${s.station_code}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStation('${s.station_code}')">🗑️</button>
+        </td>` : ''}
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  renderTable(allStations.filter(s =>
+    s.station_code.toLowerCase().includes(q) ||
+    s.station_name.toLowerCase().includes(q) ||
+    s.city.toLowerCase().includes(q) ||
+    s.state.toLowerCase().includes(q)
+  ));
+}
+
+function openAddModal() {
+  editingCode = null;
+  document.getElementById('modal-title').textContent = 'Add Station';
+  document.getElementById('save-btn').textContent = 'Save Station';
+  document.getElementById('f-code').disabled = false;
+  ['f-code','f-name','f-city','f-state'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function openEditModal(code) {
+  const s = allStations.find(x => x.station_code === code); editingCode = code;
+  document.getElementById('modal-title').textContent = 'Edit Station';
+  document.getElementById('save-btn').textContent = 'Update Station';
+  document.getElementById('f-code').value = s.station_code; document.getElementById('f-code').disabled = true;
+  document.getElementById('f-name').value = s.station_name;
+  document.getElementById('f-city').value = s.city;
+  document.getElementById('f-state').value = s.state;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
+
+async function saveForm(e) {
+  e.preventDefault();
+  const p = { station_code: document.getElementById('f-code').value.toUpperCase(), station_name: document.getElementById('f-name').value, city: document.getElementById('f-city').value, state: document.getElementById('f-state').value };
+  try {
+    if (editingCode) { await api.put(`/stations/${editingCode}`, p); showToast('Station updated!', 'success'); }
+    else { await api.post('/stations', p); showToast('Station added!', 'success'); }
+    closeModal(); await loadStations();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteStation(code) {
+  if (!confirm(`Delete station ${code}?`)) return;
+  try { await api.del(`/stations/${code}`); showToast('Station deleted', 'success'); await loadStations(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>

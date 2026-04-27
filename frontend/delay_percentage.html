@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Performance — Train Delay Management System</title>
+  <meta name="description" content="View delay performance percentages — punctuality, slight delay, significant delay and cancellations per train."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>📈 Delay Performance</h1>
+      <p>Punctuality and delay percentage breakdown by train &amp; station</p>
+    </div>
+    <div class="page-body">
+
+      <!-- Filter -->
+      <div class="card fade-in delay-1" style="margin-bottom:20px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group" style="margin:0;flex:1;min-width:160px">
+            <label class="form-label">Filter by Train No.</label>
+            <input id="f-train" type="text" class="form-control" placeholder="e.g. 12951"/>
+          </div>
+          <div class="form-group" style="margin:0;flex:1;min-width:160px">
+            <label class="form-label">Filter by Station</label>
+            <input id="f-station" type="text" class="form-control" placeholder="e.g. NDLS"/>
+          </div>
+          <button class="btn btn-primary" onclick="applyFilter()">🔍 Search</button>
+          <button class="btn btn-secondary" onclick="clearFilter()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- View Mode Toggle -->
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="btn btn-primary btn-sm" id="btn-cards" onclick="setView('cards')">🃏 Cards View</button>
+        <button class="btn btn-secondary btn-sm" id="btn-table" onclick="setView('table')">📋 Table View</button>
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="loadAll()">↻ Refresh</button>
+        <button class="btn btn-primary btn-sm" id="btn-add" style="display:none" onclick="openAddModal()">＋ Add</button>
+      </div>
+
+      <div id="content-area"><div class="loading-spinner"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Performance Record</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form onsubmit="saveForm(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Train No.</label><input id="f-tnum" type="text" class="form-control" required/></div>
+        <div class="form-group"><label class="form-label">Station Code</label><input id="f-scode" type="text" class="form-control" required/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">% Right Time</label><input id="f-rt" type="number" step="0.01" min="0" max="100" class="form-control" required/></div>
+        <div class="form-group"><label class="form-label">% Slight Delay</label><input id="f-sd" type="number" step="0.01" min="0" max="100" class="form-control" required/></div>
+        <div class="form-group"><label class="form-label">% Sig. Delay</label><input id="f-sgd" type="number" step="0.01" min="0" max="100" class="form-control" required/></div>
+        <div class="form-group"><label class="form-label">% Cancelled</label><input id="f-cu" type="number" step="0.01" min="0" max="100" class="form-control" required/></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+let allData = []; let viewMode = 'cards'; let isAdmin = false;
+
+(async () => {
+  await renderSidebar();
+  const auth = await getAuthStatus(); isAdmin = auth.isAdmin;
+  if (isAdmin) document.getElementById('btn-add').style.display = 'inline-flex';
+  await loadAll();
+})();
+
+async function loadAll() {
+  document.getElementById('content-area').innerHTML = '<div class="loading-spinner"></div>';
+  try { allData = await api.get('/delay-percentage'); render(allData); }
+  catch(e) { document.getElementById('content-area').innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+
+async function applyFilter() {
+  const train   = document.getElementById('f-train').value.trim();
+  const station = document.getElementById('f-station').value.trim().toUpperCase();
+  document.getElementById('content-area').innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    if (train)        allData = await api.get(`/delay-percentage/train/${train}`);
+    else if (station) allData = await api.get(`/delay-percentage/station/${station}`);
+    else              allData = await api.get('/delay-percentage');
+    render(allData);
+  } catch(e) { document.getElementById('content-area').innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+
+function clearFilter() { document.getElementById('f-train').value=''; document.getElementById('f-station').value=''; loadAll(); }
+function setView(mode) {
+  viewMode = mode;
+  document.getElementById('btn-cards').className = `btn btn-sm ${mode==='cards'?'btn-primary':'btn-secondary'}`;
+  document.getElementById('btn-table').className = `btn btn-sm ${mode==='table'?'btn-primary':'btn-secondary'}`;
+  render(allData);
+}
+
+function render(data) {
+  if (!data.length) { document.getElementById('content-area').innerHTML = `<div class="empty-state"><div class="icon">📈</div><p>No performance records found</p></div>`; return; }
+  if (viewMode === 'cards') renderCards(data);
+  else renderTable(data);
+}
+
+function renderCards(data) {
+  document.getElementById('content-area').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+      ${data.map(r => `
+        <div class="card" style="padding:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div>
+              <span class="train-badge">${r.train_num}</span>
+              <span style="display:block;font-size:13px;margin-top:4px;color:var(--text-secondary)">${r.train_name}</span>
+            </div>
+            <span class="station-badge">${r.station_code}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${r.station_name}</div>
+
+          ${pctBar('🟢 Right Time', r.pct_right_time, 'var(--success)')}
+          ${pctBar('🟡 Slight Delay', r.pct_slight_delay, 'var(--warning)')}
+          ${pctBar('🔴 Sig. Delay', r.pct_significant_delay, 'var(--danger)')}
+          ${pctBar('⚫ Cancelled', r.pct_cancelled_unknown, 'var(--info)')}
+
+          ${isAdmin ? `<div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord(${r.pct_id})">🗑️ Delete</button>
+          </div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function pctBar(label, val, color) {
+  return `
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span>${label}</span><span style="font-weight:600">${val}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${val}%;background:${color}"></div>
+      </div>
+    </div>`;
+}
+
+function renderTable(data) {
+  document.getElementById('content-area').innerHTML = `
+    <div class="table-wrapper">
+      <table><thead><tr>
+        <th>Train</th><th>Station</th><th>🟢 Right Time</th><th>🟡 Slight</th><th>🔴 Sig. Delay</th><th>⚫ Cancelled</th>
+        ${isAdmin ? '<th>Actions</th>' : ''}
+      </tr></thead><tbody>${data.map(r => `
+        <tr>
+          <td><span class="train-badge">${r.train_num}</span> <span style="font-size:12px;color:var(--text-secondary)">${r.train_name}</span></td>
+          <td><span class="station-badge">${r.station_code}</span></td>
+          <td style="color:var(--success);font-weight:600">${r.pct_right_time}%</td>
+          <td style="color:var(--warning);font-weight:600">${r.pct_slight_delay}%</td>
+          <td style="color:var(--danger);font-weight:600">${r.pct_significant_delay}%</td>
+          <td style="color:var(--info);font-weight:600">${r.pct_cancelled_unknown}%</td>
+          ${isAdmin ? `<td><button class="btn btn-danger btn-sm" onclick="deleteRecord(${r.pct_id})">🗑️</button></td>` : ''}
+        </tr>`).join('')}
+      </tbody></table>
+    </div>`;
+}
+
+function openAddModal() { document.getElementById('modal-overlay').classList.add('active'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
+
+async function saveForm(e) {
+  e.preventDefault();
+  try {
+    await api.post('/delay-percentage', {
+      train_num: document.getElementById('f-tnum').value,
+      station_code: document.getElementById('f-scode').value.toUpperCase(),
+      pct_right_time: parseFloat(document.getElementById('f-rt').value),
+      pct_slight_delay: parseFloat(document.getElementById('f-sd').value),
+      pct_significant_delay: parseFloat(document.getElementById('f-sgd').value),
+      pct_cancelled_unknown: parseFloat(document.getElementById('f-cu').value)
+    });
+    showToast('Record added!', 'success'); closeModal(); await loadAll();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteRecord(id) {
+  if (!confirm(`Delete performance record #${id}?`)) return;
+  try { await api.del(`/delay-percentage/${id}`); showToast('Deleted', 'success'); await loadAll(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>

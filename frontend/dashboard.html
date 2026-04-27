@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Railway Pro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>📊 System Dashboard</h1>
+      <p>Real-time analytics and performance overview</p>
+    </div>
+    
+    <div class="page-body">
+      <!-- System Alert Banner -->
+      <div id="alert-container"></div>
+
+      <!-- Stat Cards -->
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card" style="--card-color:var(--accent)">
+          <div class="stat-icon">🚂</div>
+          <div class="stat-info"><div class="label">Total Trains</div><div class="value" id="val-trains">—</div></div>
+        </div>
+        <div class="stat-card" style="--card-color:var(--info)">
+          <div class="stat-icon">🏢</div>
+          <div class="stat-info"><div class="label">Total Stations</div><div class="value" id="val-stations">—</div></div>
+        </div>
+        <div class="stat-card" style="--card-color:var(--warning)">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-info"><div class="label">Avg Delay</div><div class="value" id="val-avg">—</div><div class="sub">minutes</div></div>
+        </div>
+        <div class="stat-card" style="--card-color:var(--success)">
+          <div class="stat-icon">📈</div>
+          <div class="stat-info"><div class="label">On-Time %</div><div class="value" id="val-ontime">—</div></div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card" style="--card-color:var(--danger)">
+          <div class="stat-icon">🚩</div>
+          <div class="stat-info"><div class="label">Worst Train</div><div class="value" id="val-worst-train" style="font-size:16px">—</div></div>
+        </div>
+        <div class="stat-card" style="--card-color:var(--danger)">
+          <div class="stat-icon">📍</div>
+          <div class="stat-info"><div class="label">Worst Station</div><div class="value" id="val-worst-station" style="font-size:16px">—</div></div>
+        </div>
+        <div class="stat-card" style="--card-color:var(--text-muted)">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-info"><div class="label">Cancelled/Unknown</div><div class="value" id="val-cancelled">—</div></div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div style="display:grid;grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px;">
+        <div class="card">
+          <h3 style="font-size:16px; font-weight:800;">📉 Train-wise Average Delay</h3>
+          <div class="chart-container"><canvas id="chart-train-delay"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:16px; font-weight:800;">🏢 Station-wise Delay Trend</h3>
+          <div class="chart-container"><canvas id="chart-station-delay"></canvas></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+        <div class="card">
+          <h3 style="font-size:16px; font-weight:800;">📊 Performance Distribution</h3>
+          <div class="chart-container"><canvas id="chart-performance"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:16px; font-weight:800;">🕐 Daily Log Activity</h3>
+          <div class="chart-container"><canvas id="chart-logs"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Report Export Section -->
+      <div class="card mt-6">
+        <h3 style="font-size:16px; font-weight:800; margin-bottom: 16px;">📥 Export System Reports</h3>
+        <div style="display:flex; gap:12px;">
+          <a href="/api/reports/trains" class="btn btn-secondary">📋 Train Report</a>
+          <a href="/api/reports/stations" class="btn btn-secondary">🏢 Station Report</a>
+          <a href="/api/reports/delays" class="btn btn-primary">⏱️ Delay Stats Report</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

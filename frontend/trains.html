@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trains — Railway Pro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>🚂 Train Directory</h1>
+      <p>Browse and search our active fleet</p>
+    </div>
+    <div class="page-body">
+      <div class="card mb-6" style="padding:16px;">
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+            <input type="text" id="search-input" class="form-control" placeholder="Search by number or name…" oninput="loadTrains()"/>
+          </div>
+          <select id="sort-select" class="form-control" style="width:auto;" onchange="loadTrains()">
+            <option value="num">Sort by Number</option>
+            <option value="name">Sort by Name</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadTrains()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <div id="table-area"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  await renderSidebar();
+  await loadTrains();
+})();
+
+async function loadTrains() {
+  const search = document.getElementById('search-input').value;
+  const sortBy = document.getElementById('sort-select').value;
+  const area = document.getElementById('table-area');
+  
+  try {
+    const data = await api.get(`/trains?search=${search}&sortBy=${sortBy}`);
+    if (data.length === 0) {
+      area.innerHTML = '<div class="empty-state">No trains found matching your search.</div>';
+      return;
+    }
+    area.innerHTML = `
+      <table>
+        <thead><tr><th>Train No.</th><th>Train Name</th><th>Source</th><th>Destination</th><th>Stations</th></tr></thead>
+        <tbody>${data.map(t => `
+          <tr>
+            <td><span class="train-badge">${t.train_num}</span></td>
+            <td><strong>${t.train_name}</strong></td>
+            <td><span class="station-badge">${t.source_station}</span> ${t.source_name||''}</td>
+            <td><span class="station-badge">${t.destination_station}</span> ${t.dest_name||''}</td>
+            <td>${t.total_stations}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { area.innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+</script>
+</body>
+</html>

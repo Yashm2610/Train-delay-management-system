@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Update Log — Train Delay Management System</title>
+  <meta name="description" content="View the history of data update timestamps for all trains in the system."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>📋 Update Log</h1>
+      <p>History of all data update and scraping timestamps</p>
+    </div>
+    <div class="page-body">
+      <div class="table-wrapper fade-in delay-1">
+        <div class="table-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="form-control" placeholder="Search by train number or name…" oninput="filterTable()"/>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadLogs()">↻ Refresh</button>
+          <button class="btn btn-primary btn-sm" id="btn-add" style="display:none" onclick="openAddModal()">＋ Add Log</button>
+          <span id="count-label" style="margin-left:auto;font-size:12px;color:var(--text-muted)"></span>
+        </div>
+        <div id="table-area"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Log Entry</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form onsubmit="saveForm(event)">
+      <div class="form-group">
+        <label class="form-label">Train Number</label>
+        <input id="f-tnum" type="text" class="form-control" placeholder="e.g. 12951" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Scraped At (optional, defaults to now)</label>
+        <input id="f-dt" type="datetime-local" class="form-control"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Log</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+let allLogs = []; let isAdmin = false;
+
+(async () => {
+  await renderSidebar();
+  const auth = await getAuthStatus(); isAdmin = auth.isAdmin;
+  if (isAdmin) document.getElementById('btn-add').style.display = 'inline-flex';
+  await loadLogs();
+})();
+
+async function loadLogs() {
+  document.getElementById('table-area').innerHTML = '<div class="loading-spinner"></div>';
+  try { allLogs = await api.get('/update-log'); renderTable(allLogs); }
+  catch(e) { document.getElementById('table-area').innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+
+function renderTable(data) {
+  document.getElementById('count-label').textContent = `${data.length} log${data.length!==1?'s':''}`;
+  if (!data.length) { document.getElementById('table-area').innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No logs found</p></div>`; return; }
+  document.getElementById('table-area').innerHTML = `
+    <table><thead><tr>
+      <th>Log ID</th><th>Train</th><th>Train Name</th><th>Scraped At</th>
+      ${isAdmin ? '<th>Actions</th>' : ''}
+    </tr></thead><tbody>${data.map(l => `
+      <tr>
+        <td style="color:var(--text-muted);font-size:12px">#${l.log_id}</td>
+        <td><span class="train-badge">${l.train_num}</span></td>
+        <td>${l.train_name}</td>
+        <td style="font-size:13px;color:var(--text-secondary)">${formatDT(l.scraped_at)}</td>
+        ${isAdmin ? `<td><button class="btn btn-danger btn-sm" onclick="deleteLog(${l.log_id})">🗑️</button></td>` : ''}
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  renderTable(allLogs.filter(l => l.train_num.toLowerCase().includes(q) || l.train_name.toLowerCase().includes(q)));
+}
+
+function openAddModal() { document.getElementById('modal-overlay').classList.add('active'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
+
+async function saveForm(e) {
+  e.preventDefault();
+  const dt = document.getElementById('f-dt').value;
+  try {
+    await api.post('/update-log', { train_num: document.getElementById('f-tnum').value, scraped_at: dt ? new Date(dt).toISOString() : undefined });
+    showToast('Log added!', 'success'); closeModal(); await loadLogs();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteLog(id) {
+  if (!confirm(`Delete log #${id}?`)) return;
+  try { await api.del(`/update-log/${id}`); showToast('Log deleted', 'success'); await loadLogs(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Delay Analytics — Railway Pro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>⏱️ Delay Analytics</h1>
+      <p>Analyze and filter train-station average delays</p>
+    </div>
+    <div class="page-body">
+      
+      <div class="card mb-6" style="padding:16px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:12px; align-items:end;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Search Train</label>
+            <input type="text" id="f-train" class="form-control" placeholder="Num or Name" oninput="loadData()"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Filter Station</label>
+            <input type="text" id="f-station" class="form-control" placeholder="Code or Name" oninput="loadData()"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Min Delay</label>
+            <input type="number" id="f-min" class="form-control" placeholder="Min" oninput="loadData()"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Sort By</label>
+            <select id="f-sort" class="form-control" onchange="loadData()">
+              <option value="name">Train Name</option>
+              <option value="delay_desc">Highest Delay</option>
+              <option value="delay_asc">Lowest Delay</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" style="height:41px" onclick="loadData()">↻</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <div id="table-area"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  await renderSidebar();
+  await loadData();
+})();
+
+async function loadData() {
+  const train = document.getElementById('f-train').value;
+  const station = document.getElementById('f-station').value;
+  const minDelay = document.getElementById('f-min').value;
+  const sortBy = document.getElementById('f-sort').value;
+  const area = document.getElementById('table-area');
+  
+  try {
+    const data = await api.get(`/delay-stats?train=${train}&station=${station}&minDelay=${minDelay}&sortBy=${sortBy}`);
+    if (data.length === 0) {
+      area.innerHTML = '<div class="empty-state">No records found matching your filters.</div>';
+      return;
+    }
+    area.innerHTML = `
+      <table>
+        <thead><tr><th>Train</th><th>Station</th><th>Avg Delay</th><th>Severity</th></tr></thead>
+        <tbody>${data.map(d => `
+          <tr>
+            <td><strong>${d.train_name}</strong> <span style="font-size:12px;color:var(--text-muted)">(${d.train_num})</span></td>
+            <td><span class="station-badge">${d.station_code}</span> ${d.station_name}</td>
+            <td><span class="delay-pill ${delayClass(d.average_delay_minutes)}">${d.average_delay_minutes} min</span></td>
+            <td><span class="text-${delayClass(d.average_delay_minutes).split('-')[1]}">${d.average_delay_minutes > 30 ? 'High' : d.average_delay_minutes > 10 ? 'Medium' : 'Low'}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { area.innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+</script>
+</body>
+</html>

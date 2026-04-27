@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control Panel — Railway Pro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <h1>⚙️ Administration</h1>
+      <p>Manage system entities, data, and logs</p>
+    </div>
+
+    <div class="page-body">
+      <!-- Tabs Navigation -->
+      <div class="card mb-6" style="padding: 10px;">
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-secondary active-tab" onclick="switchTab('trains')">🚂 Trains</button>
+          <button class="btn btn-secondary" onclick="switchTab('stations')">🏢 Stations</button>
+          <button class="btn btn-secondary" onclick="switchTab('delays')">⏱️ Delay Stats</button>
+          <button class="btn btn-secondary" onclick="switchTab('perf')">📈 Performance</button>
+          <button class="btn btn-secondary" onclick="switchTab('logs')">📋 Logs</button>
+        </div>
+      </div>
+
+      <!-- Tab Contents -->
+      <div id="tab-trains" class="admin-tab">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3>Manage Trains</h3>
+            <button class="btn btn-primary" onclick="openModal('train')">+ Add Train</button>
+          </div>
+          <div class="table-wrapper"><table id="table-trains"></table></div>
+        </div>
+      </div>
+
+      <div id="tab-stations" class="admin-tab" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3>Manage Stations</h3>
+            <button class="btn btn-primary" onclick="openModal('station')">+ Add Station</button>
+          </div>
+          <div class="table-wrapper"><table id="table-stations"></table></div>
+        </div>
+      </div>
+
+      <div id="tab-delays" class="admin-tab" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3>Manage Delay Stats</h3>
+            <button class="btn btn-primary" onclick="openModal('delay')">+ Add Stat</button>
+          </div>
+          <div class="table-wrapper"><table id="table-delays"></table></div>
+        </div>
+      </div>
+
+      <div id="tab-perf" class="admin-tab" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3>Manage Performance</h3>
+            <button class="btn btn-primary" onclick="openModal('perf')">+ Add Record</button>
+          </div>
+          <div class="table-wrapper"><table id="table-perf"></table></div>
+        </div>
+      </div>
+
+      <div id="tab-logs" class="admin-tab" style="display:none;">
+        <div class="card">
+          <h3>System Logs</h3>
+          <div class="table-wrapper"><table id="table-logs"></table></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Form</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save" onclick="saveForm()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+<style>
+  .active-tab { background: var(--accent) !important; color: #fff !important; }
+</style>
+</body>
+</html>
