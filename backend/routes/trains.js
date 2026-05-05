@@ -47,15 +47,15 @@ router.get('/:num', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Admin CRUD
-router.post('/', authorize(['Admin']), async (req, res) => {
+// Admin & User CRUD
+router.post('/', authorize(['Admin', 'Station Manager', 'User']), async (req, res) => {
   const { train_num, train_name, source_station, destination_station, total_stations } = req.body;
   try {
     await db.query(
       'INSERT INTO Trains (train_num, train_name, source_station, destination_station, total_stations) VALUES (?,?,?,?,?)',
       [train_num, train_name, source_station, destination_station, total_stations || 1]
     );
-    res.status(201).json({ message: 'Train added' });
+    res.status(201).json({ message: 'Train added successfully' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

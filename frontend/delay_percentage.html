@@ -79,7 +79,8 @@ let allData = []; let viewMode = 'cards'; let isAdmin = false;
 
 (async () => {
   await renderSidebar();
-  const auth = await getAuthStatus(); isAdmin = auth.isAdmin;
+  const auth = await getAuthStatus();
+  isAdmin = auth.loggedIn && (auth.user.role === 'Admin' || auth.user.role === 'Station Manager');
   if (isAdmin) document.getElementById('btn-add').style.display = 'inline-flex';
   await loadAll();
 })();

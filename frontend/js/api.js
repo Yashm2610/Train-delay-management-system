@@ -142,6 +142,57 @@ function getSeverityAlert(avgDelay) {
   return { class: 'alert-low', message: '✅ System Status Normal: All operations within expected timeframes.' };
 }
 
+/* ── Shared Modal System ── */
+function showQuickModal(title, bodyHtml, onSave) {
+  let modal = document.getElementById('quick-modal-overlay');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'quick-modal-overlay';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="qm-title"></h3>
+          <button class="modal-close" onclick="closeQuickModal()">×</button>
+        </div>
+        <div id="qm-body" style="padding:20px"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeQuickModal()">Cancel</button>
+          <button class="btn btn-primary" id="qm-save-btn">Save Changes</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  
+  document.getElementById('qm-title').textContent = title;
+  document.getElementById('qm-body').innerHTML = bodyHtml;
+  const saveBtn = document.getElementById('qm-save-btn');
+  
+  // Clone button to remove old listeners
+  const newSaveBtn = saveBtn.cloneNode(true);
+  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+  
+  newSaveBtn.onclick = async () => {
+    newSaveBtn.disabled = true;
+    newSaveBtn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;border-width:2px"></div>';
+    try {
+      await onSave();
+      closeQuickModal();
+    } catch(e) { 
+      showToast(e.message, 'error');
+      newSaveBtn.disabled = false;
+      newSaveBtn.textContent = 'Save Changes';
+    }
+  };
+  
+  modal.classList.add('active');
+}
+
+function closeQuickModal() {
+  const modal = document.getElementById('quick-modal-overlay');
+  if (modal) modal.classList.remove('active');
+}
+
 /* ── Format datetime ── */
 function formatDT(dt) {
   return new Date(dt).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });

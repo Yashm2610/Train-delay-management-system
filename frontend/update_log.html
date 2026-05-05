@@ -63,7 +63,8 @@ let allLogs = []; let isAdmin = false;
 
 (async () => {
   await renderSidebar();
-  const auth = await getAuthStatus(); isAdmin = auth.isAdmin;
+  const auth = await getAuthStatus();
+  isAdmin = auth.loggedIn && auth.user.role === 'Admin';
   if (isAdmin) document.getElementById('btn-add').style.display = 'inline-flex';
   await loadLogs();
 })();

@@ -40,6 +40,7 @@
             </select>
           </div>
           <button class="btn btn-secondary" style="height:41px" onclick="loadData()">↻</button>
+          <button id="btn-add-stat" class="btn btn-primary" style="display:none; height:41px" onclick="openAddDelayModal(() => loadData())">➕ Add Stat</button>
         </div>
       </div>
 
@@ -51,10 +52,17 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/quick-add.js"></script>
 <script>
 (async () => {
   await renderSidebar();
   await loadData();
+  
+  // Show add button if staff
+  const auth = await getAuthStatus();
+  if (auth.loggedIn && (auth.user.role === 'Admin' || auth.user.role === 'Station Manager')) {
+    document.getElementById('btn-add-stat').style.display = 'block';
+  }
 })();
 
 async function loadData() {

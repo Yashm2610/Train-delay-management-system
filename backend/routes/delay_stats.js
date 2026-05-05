@@ -52,8 +52,13 @@ router.post('/', authorize(['Admin', 'Station Manager']), async (req, res) => {
       'INSERT INTO Delay_Stats (train_num, station_code, average_delay_minutes) VALUES (?,?,?)',
       [train_num, station_code, average_delay_minutes]
     );
-    res.status(201).json({ message: 'Delay stat added' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    res.status(201).json({ message: 'Delay stat added successfully' });
+  } catch (err) {
+    if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(400).json({ error: 'Invalid Train Number or Station Code. Please ensure they exist in the system.' });
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.put('/:id', authorize(['Admin', 'Station Manager']), async (req, res) => {

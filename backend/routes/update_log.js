@@ -25,6 +25,18 @@ router.get('/', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Admin can add logs
+router.post('/', authorize(['Admin']), async (req, res) => {
+  const { train_num, scraped_at } = req.body;
+  try {
+    await db.query(
+      'INSERT INTO Update_Log (train_num, scraped_at) VALUES (?,?)',
+      [train_num, scraped_at || new Date()]
+    );
+    res.status(201).json({ message: 'Log entry added successfully' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // Admin can delete logs
 router.delete('/:id', authorize(['Admin']), async (req, res) => {
   try {

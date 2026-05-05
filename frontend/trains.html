@@ -26,6 +26,7 @@
             <option value="name">Sort by Name</option>
           </select>
           <button class="btn btn-secondary" onclick="loadTrains()">↻ Refresh</button>
+          <button id="btn-add-train" class="btn btn-primary" style="display:none;" onclick="openAddTrainModal(() => loadTrains())">➕ Add Train</button>
         </div>
       </div>
 
@@ -37,10 +38,17 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/quick-add.js"></script>
 <script>
 (async () => {
   await renderSidebar();
   await loadTrains();
+  
+  // Show add button if logged in
+  const auth = await getAuthStatus();
+  if (auth.loggedIn) {
+    document.getElementById('btn-add-train').style.display = 'block';
+  }
 })();
 
 async function loadTrains() {

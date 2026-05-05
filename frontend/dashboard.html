@@ -21,6 +21,18 @@
       <!-- System Alert Banner -->
       <div id="alert-container"></div>
 
+      <!-- Quick Actions (Admin/Manager Only) -->
+      <div id="quick-actions-container" style="display:none; margin-bottom: 32px;">
+        <div class="card" style="border: 1px solid var(--accent-light); background: rgba(var(--accent-rgb), 0.05);">
+          <h3 style="font-size:16px; font-weight:800; margin-bottom: 16px;">⚡ Quick Management</h3>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="openAddTrainModal(() => location.reload())">➕ New Train</button>
+            <button class="btn btn-primary" onclick="openAddDelayModal(() => location.reload())">⏱️ Add Delay Stat</button>
+            <a href="admin.html" class="btn btn-secondary">⚙️ Full Control Panel</a>
+          </div>
+        </div>
+      </div>
+
       <!-- Stat Cards -->
       <div class="stat-grid" id="stat-grid">
         <div class="stat-card" style="--card-color:var(--accent)">
@@ -94,6 +106,16 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/quick-add.js"></script>
 <script src="js/dashboard.js"></script>
+<script>
+  // Show quick actions if logged in
+  (async () => {
+    const auth = await getAuthStatus();
+    if (auth.loggedIn) {
+      document.getElementById('quick-actions-container').style.display = 'block';
+    }
+  })();
+</script>
 </body>
 </html>

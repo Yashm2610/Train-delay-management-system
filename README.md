@@ -1,83 +1,111 @@
+![Railway Pro Hero](./frontend/assets/readme-hero.png)
+
 # 🚄 Railway Pro: Advanced Train Delay Management System
 
-A professional, full-stack web application designed for comprehensive railway monitoring, analytics, and fleet management.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
+[![MySQL](https://img.shields.io/badge/Database-MySQL-blue.svg)](https://www.mysql.com/)
+[![UI Style](https://img.shields.io/badge/UI-Glassmorphism-purple.svg)](#)
 
-## 🌟 Professional Features
+**Railway Pro** is a state-of-the-art, full-stack management and analytics platform designed for modern railway operations. It provides real-time monitoring, deep data analytics, and a comprehensive administration suite to optimize fleet performance and minimize delays.
 
-- **Role-Based Authentication**: Secure access control for Admins, Station Managers, and Users.
-- **Advanced Analytics**: Interactive data visualization using Chart.js (Delay trends, Performance distribution, Daily logs).
-- **Comprehensive Dashboard**: Real-time KPIs including On-Time %, Avg Delay, and Worst Affected entities.
-- **Full CRUD Management**: Dedicated administration panel for managing Trains, Stations, Delay Statistics, and Punctuality Metrics (Delay Percentages).
-- **Update Logs**: Real-time tracking of scraping logs and data updates.
-- **Data Export**: Export critical reports in CSV format for offline analysis.
-- **Intelligent Alerts**: Visual severity system for system-wide delay warnings.
-- **Premium UI/UX**: Modern glassmorphism design, responsive sidebar, and smooth transitions across all modules.
+---
 
-## 📁 Project Structure
+## ✨ Key Features
 
-```
+### 📊 Intelligence Dashboard
+- **Real-time KPIs**: Monitor On-Time %, Average Delay, and total traffic at a glance.
+- **Dynamic Charting**: Visualize delay trends and performance distributions using Chart.js.
+- **Top Entities**: Automatically identify the most delayed trains and stations.
+
+### 🛡️ Role-Based Access (RBAC)
+- **Admins**: Full CRUD access to trains, stations, and performance metrics.
+- **Station Managers**: View reports, manage specific logs, and export data.
+- **Public Users**: Access read-only dashboards and schedules.
+
+### ⚙️ Quick-Add Admin Panel
+- **Unified Management**: Tabbed interface for rapid data entry and modification.
+- **Live Logs**: Track system updates and data scraping activities in real-time.
+- **Data Export**: One-click CSV generation for professional reporting.
+
+### 💎 Premium Design System
+- **Glassmorphism UI**: Modern dark theme with high-contrast accents and subtle blurs.
+- **Micro-animations**: Smooth transitions and interactive elements for a superior UX.
+- **Responsive Layout**: Fully optimized for desktops, tablets, and mobile devices.
+
+---
+
+## 🏗️ Project Architecture
+
+```bash
 ├── backend/
-│   ├── middleware/      # Auth & RBAC logic
-│   ├── routes/          # API endpoints (Auth, Trains, Stations, Stats, Logs, etc.)
-│   ├── db.js            # Database connection
+│   ├── middleware/      # Auth & RBAC security layers
+│   ├── routes/          # RESTful API Endpoints
+│   ├── db.js            # MySQL Connection Pool
 │   └── server.js        # Express application entry
 ├── database/
-│   └── schema.sql       # SQL scripts for tables and sample data
+│   └── schema.sql       # Database structure & Sample data
 └── frontend/
-│   ├── assets/          # Images and icons
-│   ├── css/             # Premium stylesheets
-│   ├── js/              # Application logic & Charting
-│   └── *.html           # Modern application pages (Dashboard, Admin, Stations, Stats, etc.)
+    ├── css/             # Premium Design System (Vanilla CSS)
+    ├── js/              # Module logic & API integration
+    └── assets/          # High-resolution media & Icons
 ```
 
-## 🛠️ Tech Stack
-
-- **Frontend**: HTML5, CSS3 (Vanilla), JavaScript (ES6+), Chart.js
-- **Backend**: Node.js, Express.js
-- **Database**: SQL (MySQL/PostgreSQL compatible)
-- **Session**: express-session for secure authentication
+---
 
 ## 🚀 Getting Started
 
-### 1. Database Setup
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [MySQL](https://www.mysql.com/) (v8.0 or higher)
 
-1. Open your SQL client.
-2. Execute the `database/schema.sql` script to create the database and tables.
-3. Sample accounts are created:
-   - **Admin**: `admin` / `admin123`
-   - **Manager**: `manager` / `manager123`
-   - **User**: `user` / `user123`
+### 1. Database Configuration
+1. Create a MySQL database named `train_delay_management_system`.
+2. Import the schema:
+   ```bash
+   mysql -u root -p train_delay_management_system < database/schema.sql
+   ```
+3. **Note**: Update credentials in `backend/db.js` if your local setup differs.
 
-### 2. Backend Installation
-
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
 ```
 
-### 3. Run the Application
-
+### 3. Launching the App
 ```bash
 npm start
 ```
+The application will be available at `http://localhost:3000`.
 
-The server will start at `http://localhost:3000`.
-
-## 📡 API Routes
-
-| Route                    | Method              | Description                         | Access        |
-| ------------------------ | ------------------- | ----------------------------------- | ------------- |
-| `/api/auth/login`        | POST                | User login                          | All           |
-| `/api/trains`            | GET                 | List trains with search/sort        | All           |
-| `/api/trains`            | POST/PUT/DELETE     | Manage trains                       | Admin         |
-| `/api/stations`          | GET                 | List stations                       | All           |
-| `/api/stations`          | POST/PUT/DELETE     | Manage stations                     | Admin         |
-| `/api/delay-stats`       | GET/POST/PUT/DELETE | Manage average delay data           | All/Admin     |
-| `/api/delay-percentage`  | GET/POST/PUT/DELETE | Manage punctuality data             | All/Admin     |
-| `/api/update-log`        | GET/POST/DELETE     | Manage data update/scraping logs    | All/Admin     |
-| `/api/summary`           | GET                 | Dashboard KPI data                  | All           |
-| `/api/reports/trains`    | GET                 | Export trains CSV                   | Admin/Manager |
+### Default Credentials
+| Role    | Username  | Password    |
+| ------- | --------- | ----------- |
+| Admin   | `admin`   | `admin123`  |
+| Manager | `manager` | `manager123`|
+| User    | `user`    | `user123`   |
 
 ---
 
-_Developed with focus on performance and aesthetics._
+## 📡 API Overview
+
+| Endpoint | Method | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/auth/login` | `POST` | Public | Authenticate user sessions |
+| `/api/trains` | `GET/POST/PUT` | Admin | Manage railway fleet |
+| `/api/stations` | `GET/POST` | Admin | Manage station nodes |
+| `/api/summary` | `GET` | Public | Fetch Dashboard KPI data |
+| `/api/reports/trains` | `GET` | Staff | Export Train data to CSV |
+
+---
+
+## 🛠️ Tech Stack
+- **Frontend**: HTML5, CSS3 (Custom Design System), JavaScript (ES6+), Chart.js
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL
+- **Security**: express-session, bcrypt (planned), RBAC Middleware
+
+---
+
+_Developed with a focus on precision, performance, and aesthetic excellence._

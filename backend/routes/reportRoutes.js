@@ -10,7 +10,10 @@ function toCSV(json) {
   const keys = Object.keys(json[0]);
   const header = keys.join(',') + '\n';
   const rows = json.map(row => 
-    keys.map(key => `"${row[key]}"`).join(',')
+    keys.map(key => {
+      const val = row[key];
+      return val === null || val === undefined ? '""' : `"${val}"`;
+    }).join(',')
   ).join('\n');
   return header + rows;
 }
@@ -21,8 +24,8 @@ router.get('/trains', authorize(['Admin', 'Station Manager']), async (req, res) 
     const [rows] = await db.execute(`
       SELECT t.train_num, t.train_name, s1.station_name as source, s2.station_name as dest, t.total_stations 
       FROM Trains t 
-      JOIN Stations s1 ON t.source_station = s1.station_code
-      JOIN Stations s2 ON t.destination_station = s2.station_code
+      LEFT JOIN Stations s1 ON t.source_station = s1.station_code
+      LEFT JOIN Stations s2 ON t.destination_station = s2.station_code
     `);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=trains_report.csv');
