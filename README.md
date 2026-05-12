@@ -6,106 +6,120 @@
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
 [![MySQL](https://img.shields.io/badge/Database-MySQL-blue.svg)](https://www.mysql.com/)
 [![UI Style](https://img.shields.io/badge/UI-Glassmorphism-purple.svg)](#)
+[![Status](https://img.shields.io/badge/Status-Production--Ready-brightgreen.svg)](#)
 
-**Railway Pro** is a state-of-the-art, full-stack management and analytics platform designed for modern railway operations. It provides real-time monitoring, deep data analytics, and a comprehensive administration suite to optimize fleet performance and minimize delays.
+**Railway Pro** is a sophisticated, full-stack monitoring and analytics platform engineered for modern railway logistics. It empowers operators with real-time delay tracking, predictive performance insights, and a secure administration suite to streamline fleet operations.
 
 ---
 
-## ✨ Key Features
+## 💎 Premium Features
 
 ### 📊 Intelligence Dashboard
-- **Real-time KPIs**: Monitor On-Time %, Average Delay, and total traffic at a glance.
-- **Dynamic Charting**: Visualize delay trends and performance distributions using Chart.js.
-- **Top Entities**: Automatically identify the most delayed trains and stations.
+*   **Dynamic Analytics**: Real-time KPI tracking for On-Time Performance, Average Delay, and Volume.
+*   **Visual Insights**: Interactive performance trends and delay distribution charts powered by **Chart.js**.
+*   **Entity Ranking**: Instant identification of bottleneck stations and high-delay train routes.
 
-### 🛡️ Role-Based Access (RBAC)
-- **Admins**: Full CRUD access to trains, stations, and performance metrics.
-- **Station Managers**: View reports, manage specific logs, and export data.
-- **Public Users**: Access read-only dashboards and schedules.
+### 🛡️ Secure RBAC System
+*   **Administrator**: Full sovereignty over fleet data, station nodes, and system configurations.
+*   **Station Manager**: Specialized access for log management, performance reporting, and data verification.
+*   **Public Access**: Transparent, read-only dashboards for schedules and live status updates.
 
-### ⚙️ Quick-Add Admin Panel
-- **Unified Management**: Tabbed interface for rapid data entry and modification.
-- **Live Logs**: Track system updates and data scraping activities in real-time.
-- **Data Export**: One-click CSV generation for professional reporting.
-
-### 💎 Premium Design System
-- **Glassmorphism UI**: Modern dark theme with high-contrast accents and subtle blurs.
-- **Micro-animations**: Smooth transitions and interactive elements for a superior UX.
-- **Responsive Layout**: Fully optimized for desktops, tablets, and mobile devices.
+### ⚙️ Operational Excellence
+*   **Quick-Add Dashboard**: A high-velocity interface for rapid data entry and schedule adjustments.
+*   **Automated Logging**: Real-time tracking of data scraping cycles and system health.
+*   **Professional Reporting**: Advanced CSV export capabilities for stakeholder presentations.
 
 ---
 
-## 🏗️ Project Architecture
+## 🏗️ System Architecture
 
+```mermaid
+graph TD
+    User((User/Admin)) -->|HTTPS| Frontend[Frontend: HTML/CSS/JS]
+    Frontend -->|API Requests| Backend[Backend: Express.js]
+    Backend -->|Authentication| Middleware[Auth Middleware]
+    Middleware -->|Session/RBAC| Routes[API Routes]
+    Routes -->|Query| Database[(MySQL Database)]
+    Backend -->|Logging| Logs[Update Logs]
+```
+
+### Directory Structure
 ```bash
-├── backend/
-│   ├── middleware/      # Auth & RBAC security layers
-│   ├── routes/          # RESTful API Endpoints
-│   ├── db.js            # MySQL Connection Pool
-│   └── server.js        # Express application entry
-├── database/
-│   └── schema.sql       # Database structure & Sample data
-└── frontend/
-    ├── css/             # Premium Design System (Vanilla CSS)
-    ├── js/              # Module logic & API integration
-    └── assets/          # High-resolution media & Icons
+├── backend/            # Express.js Server & REST API
+│   ├── middleware/     # RBAC & Session Security
+│   ├── routes/         # Modular API Endpoints
+│   ├── db.js           # Database Connection Pool
+│   └── server.js       # Main Application Entry
+├── database/           # Persistent Storage Layer
+│   └── schema.sql      # MySQL Schema & Initial Data
+└── frontend/           # Premium User Interface
+    ├── css/            # Custom Design System (Glassmorphism)
+    ├── js/             # API Integration & Reactive Logic
+    └── assets/         # High-Fidelity Media Assets
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Technical Stack
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [MySQL](https://www.mysql.com/) (v8.0 or higher)
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | HTML5, CSS3 (Vanilla Design System), JavaScript (ES6+), Chart.js |
+| **Backend** | Node.js, Express.js |
+| **Database** | MySQL 8.0+ |
+| **Security** | express-session, Role-Based Access Control (RBAC) |
+| **Environment** | Dotenv, CORS |
 
-### 1. Database Configuration
-1. Create a MySQL database named `train_delay_management_system`.
-2. Import the schema:
+---
+
+## 🚀 Installation & Setup
+
+### 1. Database Initialization
+1. Create a database named `train_delay_management_system` in your MySQL instance.
+2. Import the schema to build the structure:
    ```bash
-   mysql -u root -p train_delay_management_system < database/schema.sql
+   mysql -u your_user -p train_delay_management_system < database/schema.sql
    ```
-3. **Note**: Update credentials in `backend/db.js` if your local setup differs.
+3. Update credentials in `backend/db.js` or via environment variables.
 
-### 2. Backend Setup
+### 2. Backend Configuration
 ```bash
 cd backend
 npm install
 ```
 
-### 3. Launching the App
+### 3. Execution
 ```bash
+# Production Mode
 npm start
+
+# Development Mode (Requires nodemon)
+npm run dev
 ```
-The application will be available at `http://localhost:3000`.
+The application will launch at [http://localhost:3000](http://localhost:3000).
 
-### Default Credentials
-| Role    | Username  | Password    |
-| ------- | --------- | ----------- |
-| Admin   | `admin`   | `admin123`  |
-| Manager | `manager` | `manager123`|
-| User    | `user`    | `user123`   |
+### 🔑 Access Credentials
+| Role | Identity | Passkey |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | `admin123` |
+| **Manager** | `manager` | `manager123` |
+| **Public** | `user` | `user123` |
 
 ---
 
-## 📡 API Overview
+## 📡 REST API Reference
 
-| Endpoint | Method | Access | Description |
+| Endpoint | Method | Role | Description |
 | :--- | :--- | :--- | :--- |
-| `/api/auth/login` | `POST` | Public | Authenticate user sessions |
-| `/api/trains` | `GET/POST/PUT` | Admin | Manage railway fleet |
-| `/api/stations` | `GET/POST` | Admin | Manage station nodes |
-| `/api/summary` | `GET` | Public | Fetch Dashboard KPI data |
-| `/api/reports/trains` | `GET` | Staff | Export Train data to CSV |
+| `/api/auth/login` | `POST` | Public | Session authentication |
+| `/api/summary` | `GET` | Public | KPI & Dashboard metrics |
+| `/api/trains` | `GET/POST/PUT` | Admin | Fleet management |
+| `/api/stations` | `GET/POST` | Staff | Station node management |
+| `/api/reports/trains` | `GET` | Staff | Export performance data |
 
 ---
 
-## 🛠️ Tech Stack
-- **Frontend**: HTML5, CSS3 (Custom Design System), JavaScript (ES6+), Chart.js
-- **Backend**: Node.js, Express.js
-- **Database**: MySQL
-- **Security**: express-session, bcrypt (planned), RBAC Middleware
+## 📜 License
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
----
-
-_Developed with a focus on precision, performance, and aesthetic excellence._
+_Crafted for precision, performance, and aesthetic excellence._
