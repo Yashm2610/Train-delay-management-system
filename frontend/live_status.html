@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Tracking — Railway Pro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .tracking-timeline {
+      margin-top: 40px;
+      position: relative;
+      padding-left: 30px;
+    }
+    .tracking-timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--glass-border);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 40px;
+      padding-left: 20px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -28px; top: 5px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 3px solid var(--accent);
+      z-index: 2;
+    }
+    .timeline-item.passed .timeline-dot { background: var(--accent); }
+    .timeline-item.current .timeline-dot { 
+      background: var(--success); 
+      border-color: var(--success);
+      box-shadow: 0 0 15px var(--success);
+      animation: pulse 2s infinite;
+    }
+    .timeline-item.upcoming .timeline-dot { border-color: var(--text-muted); }
+    
+    .timeline-content {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+    .timeline-item:hover .timeline-content { background: var(--bg-card-hover); border-color: var(--accent-light); }
+    
+    .station-info h4 { font-size: 16px; font-weight: 700; }
+    .station-info p { font-size: 12px; color: var(--text-muted); }
+    
+    .time-info { text-align: right; }
+    .time-info .eta { font-size: 14px; font-weight: 800; color: var(--accent-light); }
+    .time-info .ata { font-size: 12px; color: var(--text-muted); text-decoration: line-through; }
+    .time-info .status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 4px; display: block; }
+    
+    .status-badge-live {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 30px;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      color: var(--accent-light);
+      font-weight: 800; font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .live-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; animation: blink 1s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  </style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content">
+    <div class="page-header fade-in">
+      <div id="status-header">
+        <h1>🔍 Track Live Status</h1>
+        <p>Real-time GPS tracking and station updates</p>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <div class="card mb-6" style="padding:24px;">
+        <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; flex:1; min-width:240px;">
+            <label class="form-label">Train Number</label>
+            <input type="text" id="train-num-input" class="form-control" placeholder="e.g. 12951"/>
+          </div>
+          <button class="btn btn-primary" onclick="trackTrain()">🛰️ Locate Train</button>
+          <button class="btn btn-secondary" onclick="bookOnIRCTC()">🎟️ Book Ticket</button>
+        </div>
+      </div>
+
+      <div id="tracking-container" style="display:none;">
+        <div class="flex-center mb-6">
+          <div class="status-badge-live">
+            <div class="live-dot"></div> LIVE STATUS: <span id="live-status-text">RUNNING LATE (15m)</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 id="train-display-name">12951 — Mumbai Rajdhani</h3>
+            <span class="text-muted text-sm" id="last-updated">Last updated: Just now</span>
+          </div>
+          
+          <div class="tracking-timeline" id="timeline">
+            <!-- Timeline items will be injected here -->
+          </div>
+        </div>
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <div class="icon">🛰️</div>
+        <p>Enter a train number to see its real-time location.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  (async () => {
+    await renderSidebar();
+    
+    // Check for URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const trainNum = urlParams.get('train');
+    if (trainNum) {
+      document.getElementById('train-num-input').value = trainNum;
+      trackTrain();
+    }
+  })();
+
+  async function trackTrain() {
+    const trainNum = document.getElementById('train-num-input').value.trim();
+    if (!trainNum) return;
+
+    const container = document.getElementById('tracking-container');
+    const empty = document.getElementById('empty-state');
+    const timeline = document.getElementById('timeline');
+    
+    try {
+      const data = await api.get(`/external/live-status/${trainNum}`);
+      if (!data.success) throw new Error(data.error || 'Failed to fetch status');
+
+      empty.style.display = 'none';
+      container.style.display = 'block';
+      
+      document.getElementById('live-status-text').innerText = `${data.status.toUpperCase()} (${data.delay}m)`;
+      document.getElementById('train-display-name').innerText = `${data.train_num} — Live Tracker`;
+      document.getElementById('last-updated').innerText = `Last updated: ${new Date(data.last_updated).toLocaleTimeString()}`;
+
+      timeline.innerHTML = data.route.map(item => `
+        <div class="timeline-item ${item.status.toLowerCase()}">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="station-info">
+              <h4>${item.name}</h4>
+              <p>${item.station}</p>
+            </div>
+            <div class="time-info">
+              <div class="eta">${item.eta}</div>
+              ${item.ata !== '--' ? `<div class="ata">${item.ata}</div>` : ''}
+              <span class="status-label text-${item.status === 'Arrived' ? 'success' : (item.status === 'Departed' ? 'accent' : 'muted')}">${item.status}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function bookOnIRCTC() {
+    const trainNum = document.getElementById('train-num-input').value.trim();
+    if (!trainNum) return alert('Enter a train number first');
+    const data = await api.get(`/external/irctc-link/${trainNum}`);
+    window.open(data.url, '_blank');
+  }
+</script>
+</body>
+</html>

@@ -26,6 +26,14 @@
     <a href="login.html"     class="btn btn-secondary" id="btn-login">🔑 Staff Login</a>
   </div>
 
+  <div class="search-hero fade-in delay-4">
+    <h3>🛰️ Where is my train?</h3>
+    <div class="search-row">
+      <input type="text" id="track-num" class="form-control" placeholder="Enter Train Number (e.g. 12951)"/>
+      <button class="btn btn-primary" onclick="const n=document.getElementById('track-num').value; if(n) location.href=`live_status.html?train=${n}`">Track Now</button>
+    </div>
+  </div>
+
   <!-- Feature Cards -->
   <div class="features-grid">
     <a href="trains.html" class="feature-card fade-in delay-1">

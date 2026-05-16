@@ -64,7 +64,7 @@ async function loadTrains() {
     }
     area.innerHTML = `
       <table>
-        <thead><tr><th>Train No.</th><th>Train Name</th><th>Source</th><th>Destination</th><th>Stations</th></tr></thead>
+        <thead><tr><th>Train No.</th><th>Train Name</th><th>Source</th><th>Destination</th><th>Stations</th><th style="text-align:right;">Actions</th></tr></thead>
         <tbody>${data.map(t => `
           <tr>
             <td><span class="train-badge">${t.train_num}</span></td>
@@ -72,10 +72,21 @@ async function loadTrains() {
             <td><span class="station-badge">${t.source_station}</span> ${t.source_name||''}</td>
             <td><span class="station-badge">${t.destination_station}</span> ${t.dest_name||''}</td>
             <td>${t.total_stations}</td>
+            <td style="text-align:right;">
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <a href="live_status.html?train=${t.train_num}" class="btn btn-secondary btn-sm">🛰️ Status</a>
+                <button onclick="bookTrain('${t.train_num}')" class="btn btn-primary btn-sm">🎟️ Book</button>
+              </div>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>`;
   } catch(e) { area.innerHTML = `<p style="padding:20px;color:var(--danger)">${e.message}</p>`; }
+}
+
+async function bookTrain(trainNum) {
+  const data = await api.get(`/external/irctc-link/${trainNum}`);
+  window.open(data.url, '_blank');
 }
 </script>
 </body>

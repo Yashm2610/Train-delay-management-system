@@ -91,6 +91,7 @@ async function renderSidebar(containerId = 'sidebar') {
         <div class="nav-section-label">Main Console</div>
         <a href="index.html"           class="nav-link" id="nav-home"><span class="icon">🏠</span> Home</a>
         <a href="dashboard.html"       class="nav-link" id="nav-dashboard"><span class="icon">📊</span> Dashboard</a>
+        <a href="live_status.html"      class="nav-link" id="nav-live"><span class="icon">🛰️</span> Live Tracking</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Core Data</div>

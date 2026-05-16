@@ -33,6 +33,19 @@
         </div>
       </div>
 
+      <!-- Live Tracking Widget -->
+      <div class="card mb-6" style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:16px; font-weight:800;">🛰️ Where is my train?</h3>
+          <span class="text-muted text-sm">Real-time tracking</span>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <input type="text" id="dash-track-input" class="form-control" placeholder="Enter Train Number..." style="max-width: 300px;"/>
+          <button class="btn btn-primary" onclick="const n=document.getElementById('dash-track-input').value; if(n) location.href=`live_status.html?train=${n}`">Track Live</button>
+          <a href="live_status.html" class="btn btn-secondary">Browse All</a>
+        </div>
+      </div>
+
       <!-- Stat Cards -->
       <div class="stat-grid" id="stat-grid">
         <div class="stat-card" style="--card-color:var(--accent)">

@@ -10,6 +10,7 @@ const delayPctRoutes   = require('./routes/delay_percentage');
 const updateLogRoutes  = require('./routes/update_log');
 const authRoutes       = require('./routes/authRoutes');
 const reportRoutes     = require('./routes/reportRoutes');
+const externalRoutes   = require('./routes/external');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,7 @@ app.use('/api/delay-percentage', delayPctRoutes);
 app.use('/api/update-log',       updateLogRoutes);
 app.use('/api/auth',             authRoutes);
 app.use('/api/reports',          reportRoutes);
+app.use('/api/external',         externalRoutes);
 
 // ── Dashboard summary endpoint ─────────────────────────────────────────────
 const db = require('./db');
